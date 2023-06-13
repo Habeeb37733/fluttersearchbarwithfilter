@@ -9,6 +9,10 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  bool _checkbox1 = false;
+  bool _checkbox2 = false;
+  bool _checkbox3 = false;
+
   String? selectedOption;
   final List<Map<String, dynamic>> _allUsers = [
     {"id": 1, "name": "Andy", "age": 29},
@@ -37,11 +41,17 @@ class _HomePageState extends State<HomePage> {
 
     if (enteredKeyword.isEmpty) {
       if (selectedOption == '1-15') {
-        results = _allUsers.where((user) => user["age"] >= 1 && user["age"] <= 15).toList();
+        results = _allUsers
+            .where((user) => user["age"] >= 1 && user["age"] <= 15)
+            .toList();
       } else if (selectedOption == '15-30') {
-        results = _allUsers.where((user) => user["age"] >= 15 && user["age"] <= 30).toList();
+        results = _allUsers
+            .where((user) => user["age"] >= 15 && user["age"] <= 30)
+            .toList();
       } else if (selectedOption == '30-50') {
-        results = _allUsers.where((user) => user["age"] >= 30 && user["age"] <= 50).toList();
+        results = _allUsers
+            .where((user) => user["age"] >= 30 && user["age"] <= 50)
+            .toList();
       } else {
         results = _allUsers;
       }
@@ -50,7 +60,9 @@ class _HomePageState extends State<HomePage> {
         final name = user["name"].toLowerCase();
         final age = user["age"].toString();
         final keyword = enteredKeyword.toLowerCase();
-        return name.contains(keyword) || age.contains(keyword);
+        return (_checkbox1 && user["id"].toString().contains(keyword)) ||
+            (_checkbox2 && name.contains(keyword)) ||
+            (_checkbox3 && age.contains(keyword));
       }).toList();
     }
 
@@ -58,6 +70,7 @@ class _HomePageState extends State<HomePage> {
       _foundUsers = results;
     });
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -72,12 +85,27 @@ class _HomePageState extends State<HomePage> {
             const SizedBox(
               height: 20,
             ),
-            TextField(
-              onChanged: (value) => _runFilter(value),
-              decoration: const InputDecoration(
-                labelText: 'Search',
-                suffixIcon: Icon(Icons.search),
-              ),
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    onChanged: (value) => _runFilter(value),
+                    decoration: const InputDecoration(
+                      labelText: 'Search',
+                      suffixIcon: Icon(Icons.search),
+                    ),
+                  ),
+                ),
+                IconButton(
+                  icon: Icon(Icons.menu),
+                  onPressed: () {
+                    showPopup(context);
+                  },
+                ),
+
+
+
+              ],
             ),
             const SizedBox(
               height: 10,
@@ -86,6 +114,8 @@ class _HomePageState extends State<HomePage> {
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
                 Text("Filter"),
+
+
                 DropdownButton<String>(
                   value: selectedOption,
                   onChanged: (String? newValue) {
@@ -94,7 +124,8 @@ class _HomePageState extends State<HomePage> {
                       _runFilter('');
                     });
                   },
-                  hint: const Text('Age', style: TextStyle(fontSize: 16)), // Heading "Age"
+                  hint: const Text('Age', style: TextStyle(fontSize: 16)),
+                  // Heading "Age"
                   items: <String>[
                     '1-15',
                     '15-30',
@@ -117,36 +148,38 @@ class _HomePageState extends State<HomePage> {
               child: _foundUsers.isNotEmpty
                   ? ListView.builder(
                 itemCount: _foundUsers.length,
-                itemBuilder: (context, index) => Card(
-                  key: ValueKey(_foundUsers[index]["id"]),
-                  color: Colors.amberAccent,
-                  elevation: 4,
-                  margin: const EdgeInsets.symmetric(vertical: 10),
-                  child: ListTile(
-                    leading: Text(
-                      _foundUsers[index]["id"].toString(),
-                      style: const TextStyle(fontSize: 24),
-                    ),
-                    title: Row(
-                      children: [
-                        const Text("Name:"),
-                        Text(_foundUsers[index]['name']),
-                      ],
-                    ),
-                    subtitle: Row(
-                      children: [
-                        Row(
+                itemBuilder: (context, index) =>
+                    Card(
+                      key: ValueKey(_foundUsers[index]["id"]),
+                      color: Colors.amberAccent,
+                      elevation: 4,
+                      margin: const EdgeInsets.symmetric(vertical: 10),
+                      child: ListTile(
+                        leading: Text(
+                          _foundUsers[index]["id"].toString(),
+                          style: const TextStyle(fontSize: 24),
+                        ),
+                        title: Row(
                           children: [
-                            const Text("Age:"),
-                            Text(
-                              '${_foundUsers[index]["age"].toString()} years old',
+                            const Text("Name:"),
+                            Text(_foundUsers[index]['name']),
+                          ],
+                        ),
+                        subtitle: Row(
+                          children: [
+                            Row(
+                              children: [
+                                const Text("Age:"),
+                                Text(
+                                  '${_foundUsers[index]["age"]
+                                      .toString()} years old',
+                                ),
+                              ],
                             ),
                           ],
                         ),
-                      ],
+                      ),
                     ),
-                  ),
-                ),
               )
                   : const Text(
                 'No results found',
@@ -156,6 +189,84 @@ class _HomePageState extends State<HomePage> {
           ],
         ),
       ),
+    );
+  }
+
+  void showPopup(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Popup Window'),
+          content: StatefulBuilder(
+            builder: (BuildContext context, StateSetter setState) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    children: [
+                      Checkbox(
+                        value: _checkbox1,
+                        onChanged: (value) {
+                          setState(() {
+                            _checkbox1 = value!;
+                          });
+                        },
+                      ),
+                      Text('ID'),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      Checkbox(
+                        value: _checkbox2,
+                        onChanged: (value) {
+                          setState(() {
+                            _checkbox2 = value!;
+                          });
+                        },
+                      ),
+                      Text('Name'),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      Checkbox(
+                        value: _checkbox3,
+                        onChanged: (value) {
+                          setState(() {
+                            _checkbox3 = value!;
+                          });
+                        },
+                      ),
+                      Text('Age'),
+                    ],
+                  ),
+                ],
+              );
+            },
+          ),
+          actions: [
+            Center(
+              child: TextButton(
+                child: Text('Submit'),
+                onPressed: () {
+                  // Perform actions with the entered data
+
+                  print('ID: $_checkbox1');
+                  print('NAME: $_checkbox2');
+                  print('AGE: $_checkbox3');
+
+                  // Close the dialog
+                  Navigator.of(context).pop();
+                  _runFilter('');
+                },
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }
